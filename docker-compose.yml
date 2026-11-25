@@ -1,0 +1,97 @@
+services:
+  usuarios:
+    build: .
+    command: ["uvicorn", "services.usuarios.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      MICROSSERVICO: "1"
+      DATABASE_URL: sqlite:////dados/usuarios.db
+      JWT_SEGREDO: ${JWT_SEGREDO:?Defina JWT_SEGREDO no arquivo .env}
+      TOKEN_MINUTOS: ${TOKEN_MINUTOS:-60}
+      DADOS_EXEMPLO: ${DADOS_EXEMPLO:-1}
+      SENHA_EXEMPLO: ${SENHA_EXEMPLO:-Helpdesk2026}
+    volumes: ["dados_usuarios:/dados"]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [helpdesk]
+
+  inventario:
+    build: .
+    command: ["uvicorn", "services.inventario.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      MICROSSERVICO: "1"
+      DATABASE_URL: sqlite:////dados/inventario.db
+      JWT_SEGREDO: ${JWT_SEGREDO:?Defina JWT_SEGREDO no arquivo .env}
+      DADOS_EXEMPLO: ${DADOS_EXEMPLO:-1}
+    volumes: ["dados_inventario:/dados"]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [helpdesk]
+
+  chamados:
+    build: .
+    command: ["uvicorn", "services.chamados.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      MICROSSERVICO: "1"
+      DATABASE_URL: sqlite:////dados/chamados.db
+      JWT_SEGREDO: ${JWT_SEGREDO:?Defina JWT_SEGREDO no arquivo .env}
+      USUARIOS_URL: http://usuarios:8000
+      INVENTARIO_URL: http://inventario:8000
+      DADOS_EXEMPLO: ${DADOS_EXEMPLO:-1}
+    volumes: ["dados_chamados:/dados"]
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks: [helpdesk]
+
+  gateway:
+    build: .
+    command: ["uvicorn", "gateway.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      USUARIOS_URL: http://usuarios:8000
+      INVENTARIO_URL: http://inventario:8000
+      CHAMADOS_URL: http://chamados:8000
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      usuarios: {condition: service_healthy}
+      inventario: {condition: service_healthy}
+      chamados: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/saude', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    read_only: true
+    tmpfs: ["/tmp"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    networks: [helpdesk]
+
+networks:
+  helpdesk:
+    driver: bridge
+
+volumes:
+  dados_usuarios:
+  dados_inventario:
+  dados_chamados:
