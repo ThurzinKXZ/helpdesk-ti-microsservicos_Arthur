@@ -1,8 +1,8 @@
 # HelpDesk TI · arquitetura de microsserviços
 
-> **Vídeo de demonstração (4 a 6 minutos):** [https://youtu.be/EFzdbEn9Za0]
+> **Vídeo de demonstração (4 a 6 minutos):** [https://youtu.be/GQt5zi9LrpY]
 >
-> **Repositório individual:** [https://github.com/ThurzinKXZ/helpdesk-ti-microsservicos?utm_source=chatgpt.com]
+> **Repositório individual:** [https://github.com/ThurzinKXZ/helpdesk-ti-microsservicos_Arthur]
 
 Projeto da disciplina de Arquitetura de Software — evolução do HelpDesk TI monolítico para uma arquitetura distribuída com três microsserviços, bancos isolados e API Gateway.
 
